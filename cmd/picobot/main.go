@@ -165,6 +165,13 @@ func NewRootCmd() *cobra.Command {
 				}
 			}
 
+			// start HTTP channel if enabled
+			if cfg.Channels.HTTP.Enabled {
+				if err := channels.StartHTTP(ctx, hub, cfg.Channels.HTTP.Addr); err != nil {
+					fmt.Fprintf(os.Stderr, "failed to start http channel: %v\n", err)
+				}
+			}
+
 			// start hub router after all channels have subscribed.
 			// This routes outbound messages from hub.Out to each channel's
 			// dedicated queue, preventing competing reads when multiple channels

@@ -27,6 +27,10 @@ Picobot is configured via `~/.picobot/config.json`. Run `picobot onboard` to gen
       "enabled": false,
       "token": "",
       "allowFrom": []
+    },
+    "http": {
+      "enabled": false,
+      "addr": ":8080"
     }
   },
   "providers": {
@@ -137,7 +141,7 @@ If no valid provider is configured, Picobot uses a **Stub** provider (echoes bac
 
 ## channels
 
-Chat channel integrations. Supports Telegram and Discord.
+Chat channel integrations. Supports Telegram, Discord, and HTTP.
 
 ### channels.telegram
 
@@ -188,6 +192,53 @@ The Discord bot uses the Gateway WebSocket API for receiving messages and the RE
 **Required Privileged Intents (enable in Developer Portal → Bot):**
 - Message Content Intent
 
+### channels.http
+
+Exposes a simple HTTP endpoint so any HTTP client can send messages to the agent and receive replies synchronously.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | bool | `false` | Set to `true` to start the HTTP channel. |
+| `addr` | string | `":8080"` | TCP address to listen on (e.g. `":8080"`, `"127.0.0.1:9000"`). |
+
+**Endpoint:** `POST /chat`
+
+**Request body (JSON):**
+```json
+{
+  "message": "What is the weather today?",
+  "chat_id": "optional-session-id"
+}
+```
+
+- `message` *(required)* — the text to send to the agent.
+- `chat_id` *(optional)* — use the same value across requests to keep a persistent conversation session. A unique ID is generated per request when omitted.
+
+**Response body (JSON):**
+```json
+{
+  "reply": "I don't have live weather data, but I can..."
+}
+```
+
+**Example with curl:**
+```sh
+curl -s -X POST http://localhost:8080/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello, who are you?"}'
+```
+
+```json
+{
+  "channels": {
+    "http": {
+      "enabled": true,
+      "addr": ":8080"
+    }
+  }
+}
+```
+
 ---
 
 ## Workspace Files
@@ -231,6 +282,10 @@ The workspace directory (default `~/.picobot/workspace`) contains files that sha
       "enabled": true,
       "token": "YOUR_DISCORD_BOT_TOKEN",
       "allowFrom": ["YOUR_DISCORD_USER_ID"]
+    },
+    "http": {
+      "enabled": false,
+      "addr": ":8080"
     }
   },
   "providers": {
